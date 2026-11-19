@@ -1,0 +1,10 @@
+[Desktop Entry]
+Type=Application
+Version=1.0
+Name=Steam audio router
+Comment=Routes the Remote Play game's audio to Steam's capture node (PipeWire)
+Exec=__EXEC__
+Terminal=false
+NoDisplay=true
+X-GNOME-Autostart-enabled=true
+X-KDE-autostart-after=panel

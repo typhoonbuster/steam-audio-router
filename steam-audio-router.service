@@ -1,0 +1,25 @@
+[Unit]
+Description=Steam Remote Play audio router (PipeWire)
+# Start after the audio stack but do not bind to it: the router survives
+# PipeWire/WirePlumber restarts on its own (reconnect with backoff).
+After=pipewire.service wireplumber.service pipewire-pulse.service
+Wants=pipewire.service wireplumber.service
+# Nothing to do without a PipeWire socket at all
+ConditionPathExistsGlob=%t/pipewire-0
+
+[Service]
+Type=simple
+ExecStart=%h/.local/bin/steam-audio-router run --config %h/.config/steam-audio-router/config.toml
+# Logs: journalctl --user -u steam-audio-router -f
+SyslogIdentifier=steam-audio-router
+Restart=on-failure
+RestartSec=3s
+# Clean stop: SIGTERM -> the router closes pw-dump and the Steam log
+KillSignal=SIGTERM
+KillMode=mixed
+TimeoutStopSec=10s
+Nice=5
+NoNewPrivileges=yes
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,73 @@
+# steam-audio-router configuration (TOML).
+# Installed at ~/.config/steam-audio-router/config.toml. Any key left out keeps
+# its default (see `steam-audio-router print-config`). Restart the service
+# after editing.
+
+# ---------------------------------------------------------------------------
+# Target node: the sink Steam creates to capture the audio it streams.
+# On current Steam clients it is named "SteamProcessRecording".
+# Matching is case-insensitive; spaces, dashes and underscores are ignored and
+# a partial match is enough ("steam_process_recording.2"). With several
+# candidates an exact name wins, otherwise the most recently created node.
+target_node_patterns = ["SteamProcessRecording", "SteamRecordProcessing"]
+
+# ---------------------------------------------------------------------------
+# Accepted Steam ancestors: process `comm` names (/proc/<pid>/comm, 15 chars
+# max; longer names are truncated automatically, like the kernel does).
+# A stream "comes from Steam" when, walking PPID by PPID up to PID 1, one of
+# its STRICT ancestors has one of these names.
+# Typical chain (SteamRT3 + Proton):
+#   steam -> srt-client-container -> x86_64-linux-gnu-srt-launcher-service
+#   -> steam-runtime-supervisor -> reaper -> srt-bwrap -> pv-adverb -> Game.exe
+steam_ancestor_comms = [
+  "steam",
+  "steamwebhelper",
+  "reaper",
+  "steam-runtime-launcher-service",
+  "steam-runtime-supervisor",
+  "steam-runtime-launch-client",
+  "srt-client-container",
+  "gameoverlayui",
+]
+
+# ---------------------------------------------------------------------------
+# Which Steam stream(s) to route?
+#   "steam-log"          : ONLY the game Steam itself declares it is capturing
+#                          in logs/streaming_log.txt ("Telling process <pid>
+#                          to change audio capture state: enabled"), i.e. the
+#                          game of the active Remote Play session. Other Steam
+#                          games running at the same time are left alone.
+#   "all-steam-children" : every stream descending from Steam while the target
+#                          node exists (fallback if Valve changes the log).
+selection_mode = "steam-log"
+steam_log_path = "~/.steam/steam/logs/streaming_log.txt"
+# If the log is missing/unreadable, switch to all-steam-children automatically
+fallback_when_log_unavailable = true
+# Also route sounds played by the Steam client itself (UI, notifications)
+include_steam_itself = false
+
+# ---------------------------------------------------------------------------
+# Behaviour
+# Log level: "debug", "info", "warning", "error"
+log_level = "info"
+# true: everything is logged but no pw-link command is executed
+dry_run = false
+# Period (seconds) for re-reading the Steam log and running deferred checks.
+# PipeWire itself is followed through events (pw-dump -m), never polled.
+poll_interval = 1.0
+# Period (seconds) of the full reconciliation safety net (very cheap)
+reconcile_interval = 10.0
+# Time (seconds) before verifying that the links really exist in the graph
+link_verify_delay = 2.0
+# Maximum routing attempts for one stream towards one target
+max_route_attempts = 3
+# Remove the links WE created when Steam stops capturing the process (remote
+# client back in the Steam UI). Links added by hand (qpwgraph...) are never
+# removed. When the target node disappears the links die with it anyway.
+unroute_on_disable = true
+# Remove the links we created when the service stops (SIGTERM)
+unroute_on_exit = false
+# Bytes of the Steam log tail replayed at startup (rebuilds the session state)
+steam_log_tail_bytes = 524288
+# Successive reconnection delays (seconds) when PipeWire goes away
+pw_restart_backoff = [1, 2, 5, 10]

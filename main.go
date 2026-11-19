@@ -1,5 +1,5 @@
 // steam-audio-router routes the audio of the Steam game being streamed with
-// Remote Play to Steam's capture node ("SteamProcessRecording") under
+// Remote Play Together to Steam's capture node ("SteamProcessRecording") under
 // PipeWire/WirePlumber. Single static binary; the only runtime requirements
 // are pw-dump and pw-link, which ship with PipeWire itself.
 //
@@ -11,7 +11,7 @@
 //  3. The process tree is walked through /proc/<pid>/stat (PPID) up to PID 1;
 //     the stream "comes from Steam" if an ancestor's comm is in the
 //     configurable steam_ancestor_comms list.
-//  4. To route only the game of the active Remote Play session, Steam's own
+//  4. To route only the game of the active Remote Play Together session, Steam's own
 //     logs/streaming_log.txt is followed: "Telling process <pid> to change
 //     audio capture state: enabled|disabled". A stream is routed when its
 //     PID is that process or one of its descendants (and point 3 holds).

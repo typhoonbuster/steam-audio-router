@@ -1,8 +1,8 @@
 # steam-audio-router
 
-Adds the missing PipeWire links between the Steam game currently streamed
-with **Remote Play** and Steam's capture node, so the remote client gets
-sound. Nothing else in your graph is touched: the game keeps playing to
+Adds the missing PipeWire links between the Steam game you are sharing in a
+**Remote Play Together** session and Steam's capture node, so your guests
+get sound. Nothing else in your graph is touched: the game keeps playing to
 whatever sink you chose, Steam's capture node simply receives a copy. One
 static binary, no runtime dependency beyond PipeWire's own `pw-dump` /
 `pw-link`, works with or without systemd.
@@ -10,15 +10,16 @@ static binary, no runtime dependency beyond PipeWire's own `pw-dump` /
 ## Why this exists
 
 The current Steam client for Linux (the SteamRT3 / 64-bit runtime, still in
-beta at the time of writing) does not capture the game's audio when you
-stream it with Remote Play: the remote client sees the picture but hears
-nothing. This is a long-standing issue on Linux, and it survived the move
-to the new runtime. Everything else about SteamRT3 is a clear step forward,
-Remote Play included: input, latency and compatibility work far better than
-with the old client, sound being the one thing left broken. Rather than go
-back, this project fills the gap: it attaches the game's audio to Steam's
-capture node so the remote clients hear the game, and leaves the rest of
-your audio setup untouched.
+beta at the time of writing) does not capture the game's audio in a
+**Remote Play Together** session: your guests see the picture but hear
+nothing. Plain Remote Play (streaming a game to your own other device) is
+not affected. This is a long-standing issue on Linux, and it survived the
+move to the new runtime. Everything else about SteamRT3 is a clear step
+forward, Remote Play Together included: input, latency and compatibility
+work far better than with the old client, sound being the one thing left
+broken. Rather than go back, this project fills the gap: it attaches the
+game's audio to Steam's capture node so your guests hear the game, and
+leaves the rest of your audio setup untouched.
 
 > On current Steam clients (beta, SteamRT3) the capture node is named
 > **`SteamProcessRecording`**. Matching is tolerant (case, spaces, dashes,
@@ -26,7 +27,7 @@ your audio setup untouched.
 
 ## The problem in detail
 
-When a Remote Play session starts, Steam:
+When a Remote Play Together session starts, Steam:
 
 1. creates, through pipewire-pulse, a virtual sink `SteamProcessRecording`
    (a combine-stream with `steam.autounload = true`, mirrored to the default
@@ -100,11 +101,11 @@ Dry-run: true
 
 IGNORE  WEBRTC VoiceEngine (id 109)   pid=6067   no Steam ancestor (chain: Discord[6067] <- Discord[5914] <- systemd[1698] <- systemd[1])
 IGNORE  output.SteamProcessRecording_easyeffects_sink (id 174)   pid=?   internal stream of the target sink (combine-stream)
-LINK    Spelunky.exe (id 203)   pid=17998   Steam descendant via reaper[17810], and process 17998 requested by Steam (active Remote Play); chain: Spelunky.exe[17998] <- pv-adverb[17875] <- srt-bwrap[17812] <- reaper[17810] <- steam-runtime-s[17809] <- x86_64-linux-gn[6571] <- srt-client-cont[6560] <- steam[6509] <- ...
+LINK    Spelunky.exe (id 203)   pid=17998   Steam descendant via reaper[17810], and process 17998 requested by Steam (active Remote Play Together); chain: Spelunky.exe[17998] <- pv-adverb[17875] <- srt-bwrap[17812] <- reaper[17810] <- steam-runtime-s[17809] <- x86_64-linux-gn[6571] <- srt-client-cont[6560] <- steam[6509] <- ...
 ```
 
 `steam-audio-router once` (without `--dry-run`) adds the links once and
-exits: a good way to confirm the remote client gets sound before enabling the
+exits: a good way to confirm your guests get sound before enabling the
 service.
 
 ### Enable
@@ -168,7 +169,7 @@ A successful session in the journal:
 ```
 Target node detected: SteamProcessRecording (id 181, serial 4034)
 Steam requests audio capture of process Spelunky.exe[17998]
-Stream Spelunky.exe (id 203) [pid 17998 via client.pipewire.sec.pid]: LINK -> SteamProcessRecording: Steam descendant via reaper[17810], and process 17998 requested by Steam (active Remote Play); chain: ...
+Stream Spelunky.exe (id 203) [pid 17998 via client.pipewire.sec.pid]: LINK -> SteamProcessRecording: Steam descendant via reaper[17810], and process 17998 requested by Steam (active Remote Play Together); chain: ...
 Adding 2 link(s) Spelunky.exe (id 203) -> SteamProcessRecording (attempt 1/3)
   pw-link output_FL -> SteamProcessRecording:playback_FL (ports 173 -> 95)
   pw-link output_FR -> SteamProcessRecording:playback_FR (ports 174 -> 96)
@@ -191,7 +192,7 @@ In **qpwgraph** you see the same: the game's outputs go to your sink *and* to
 qpwgraph's patchbay in exclusive mode would remove cables it does not know
 about, so leave it off (or add the same cables to your patchbay).
 
-When the remote client goes back to the Steam UI, Steam logs "Starting
+When a guest goes back to the Steam UI, Steam logs "Starting
 desktop stream" and disables the capture: the journal shows `Steam stops
 audio capture ...` / `Removing the 2 link(s) we added ...`, then the links
 come back when the game regains focus (set `unroute_on_disable = false` to
@@ -204,7 +205,7 @@ with it, and the game keeps playing to your sink as it always did.
 steam-audio-router once --dry-run --log-level debug
 ```
 
-- **"target node absent"**: no Remote Play session, or the sink name
+- **"target node absent"**: no Remote Play Together session, or the sink name
   changed. `pw-dump | grep -i record` then adjust `target_node_patterns`.
 - **"Steam is not capturing this process (PIDs requested by Steam: none)"**:
   Steam has not written `Telling process ... enabled` yet. Check

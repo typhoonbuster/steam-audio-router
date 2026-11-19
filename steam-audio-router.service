@@ -1,5 +1,5 @@
 [Unit]
-Description=Steam Remote Play audio router (PipeWire)
+Description=Steam Remote Play Together audio router (PipeWire)
 # Start after the audio stack but do not bind to it: the router survives
 # PipeWire/WirePlumber restarts on its own (reconnect with backoff).
 After=pipewire.service wireplumber.service pipewire-pulse.service

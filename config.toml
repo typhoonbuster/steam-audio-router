@@ -35,7 +35,7 @@ steam_ancestor_comms = [
 #   "steam-log"          : ONLY the game Steam itself declares it is capturing
 #                          in logs/streaming_log.txt ("Telling process <pid>
 #                          to change audio capture state: enabled"), i.e. the
-#                          game of the active Remote Play session. Other Steam
+#                          game of the active Remote Play Together session. Other Steam
 #                          games running at the same time are left alone.
 #   "all-steam-children" : every stream descending from Steam while the target
 #                          node exists (fallback if Valve changes the log).

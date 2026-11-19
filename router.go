@@ -215,7 +215,7 @@ func (r *Router) evaluate(node *pwObject) Decision {
 		return Decision{Reason: "not a Stream/Output/Audio node"}
 	}
 	if r.target == nil {
-		return Decision{Reason: "target node absent (no Remote Play session?)"}
+		return Decision{Reason: "target node absent (no Remote Play Together session?)"}
 	}
 	if node.ID == r.target.ID {
 		return Decision{Reason: "this is the target node"}
@@ -268,7 +268,7 @@ func (r *Router) evaluate(node *pwObject) Decision {
 			return d
 		}
 		d.Route = true
-		d.Reason = fmt.Sprintf("Steam descendant via %s, and process %d requested by Steam (active Remote Play); chain: %s",
+		d.Reason = fmt.Sprintf("Steam descendant via %s, and process %d requested by Steam (active Remote Play Together); chain: %s",
 			anc.Label(), match, chainString(chain))
 		return d
 	}
